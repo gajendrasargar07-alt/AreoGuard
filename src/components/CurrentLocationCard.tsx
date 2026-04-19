@@ -1,3 +1,4 @@
+
 "use client"
 
 import { MapPin, RefreshCw } from "lucide-react";
@@ -11,12 +12,21 @@ export function CurrentLocationCard() {
 
   const handleRefresh = () => {
     setLocationLoading(true);
-    // Refresh both location and simulate fresh local data
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
           const { latitude, longitude } = pos.coords;
-          setUserLocation({ lat: latitude, lng: longitude, city: "Current Coordinates" });
+          
+          let cityName = "Finding area...";
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+            const data = await res.json();
+            cityName = data.address.city || data.address.town || data.address.village || data.address.suburb || "Current Area";
+          } catch (error) {
+            cityName = "Current Location";
+          }
+
+          setUserLocation({ lat: latitude, lng: longitude, city: cityName });
           simulateNewReading();
           setLocationLoading(false);
         },

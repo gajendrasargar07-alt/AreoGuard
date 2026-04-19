@@ -1,3 +1,4 @@
+
 "use client"
 
 import dynamic from 'next/dynamic';
@@ -26,12 +27,22 @@ export default function Home() {
     setLocationLoading(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
           const { latitude, longitude } = pos.coords;
+          
+          let cityName = "Fetching location...";
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+            const data = await res.json();
+            cityName = data.address.city || data.address.town || data.address.village || data.address.suburb || "Current Area";
+          } catch (error) {
+            cityName = "Detected Location";
+          }
+
           setUserLocation({ 
             lat: latitude, 
             lng: longitude, 
-            city: "User's Device Location" 
+            city: cityName 
           });
 
           // Create initial "Proper" reading
