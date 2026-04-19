@@ -1,54 +1,98 @@
+
 "use client"
 
-import { useEffect, useState } from "react";
-import { BrainCircuit, ShieldCheck } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { BrainCircuit, ShieldCheck, AlertCircle, RefreshCcw } from "lucide-react";
 import { LiquidGlassCard } from "./LiquidGlassCard";
 import { useAeroStore } from "@/hooks/use-aero-store";
 import { assessPersonalizedRisk, PersonalizedRiskAssessmentOutput } from "@/ai/flows/personalized-risk-assessment";
+import { Button } from "./ui/button";
 
 export function AIPredictionCard() {
   const { userLocation, userType, currentReading } = useAeroStore();
   const [assessment, setAssessment] = useState<PersonalizedRiskAssessmentOutput | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function getAIPrediction() {
-      if (!userLocation || !currentReading) return;
-      
-      setLoading(true);
-      try {
-        const result = await assessPersonalizedRisk({
-          userType,
-          city: userLocation.city,
-          aqi: currentReading.aqi,
-          predictedAqiTrend: currentReading.aqi > 100 ? "expected to rise slightly" : "stable with slight improvement",
-          pm25: currentReading.pm25,
-          no2: currentReading.no2,
-          o3: currentReading.o3,
-          co: currentReading.co,
-          so2: currentReading.so2,
-        });
-        setAssessment(result);
-      } catch (error) {
-        console.error("AI assessment failed", error);
-      } finally {
-        setLoading(false);
+  const getAIPrediction = useCallback(async () => {
+    if (!userLocation || !currentReading) return;
+    
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await assessPersonalizedRisk({
+        userType,
+        city: userLocation.city,
+        aqi: currentReading.aqi,
+        predictedAqiTrend: currentReading.aqi > 100 ? "expected to rise slightly" : "stable with slight improvement",
+        pm25: currentReading.pm25,
+        no2: currentReading.no2,
+        o3: currentReading.o3,
+        co: currentReading.co,
+        so2: currentReading.so2,
+      });
+      setAssessment(result);
+    } catch (err: any) {
+      if (err.message?.includes('429') || err.message?.includes('RESOURCE_EXHAUSTED')) {
+        setError("AI Quota Reached. Please wait a minute.");
+      } else {
+        setError("AI analysis unavailable.");
       }
+      console.error("AI assessment failed", err);
+    } finally {
+      setLoading(false);
     }
-
-    // Debounce AI call to avoid spamming on every simulation click
-    const timer = setTimeout(getAIPrediction, 1500);
-    return () => clearTimeout(timer);
   }, [userLocation, userType, currentReading]);
 
-  if (loading || !assessment) {
+  useEffect(() => {
+    // Longer debounce to save quota on simulation spam
+    const timer = setTimeout(() => {
+      if (!assessment && !error) {
+        getAIPrediction();
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [getAIPrediction, assessment, error]);
+
+  if (loading) {
     return (
       <LiquidGlassCard className="mb-4 animate-pulse">
-        <div className="h-4 w-1/3 bg-white/10 rounded mb-4"></div>
-        <div className="h-20 bg-white/5 rounded-xl"></div>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+            <BrainCircuit className="w-5 h-5 text-primary animate-pulse" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-3 w-24 bg-white/10 rounded"></div>
+            <div className="h-2 w-16 bg-white/5 rounded"></div>
+          </div>
+        </div>
+        <div className="h-20 bg-white/5 rounded-xl border border-white/5"></div>
       </LiquidGlassCard>
     );
   }
+
+  if (error) {
+    return (
+      <LiquidGlassCard className="mb-4 border-destructive/20 bg-destructive/5">
+        <div className="flex items-center gap-3 mb-4">
+          <AlertCircle className="w-5 h-5 text-destructive" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-destructive">AI Advisor Paused</h3>
+        </div>
+        <p className="text-[11px] text-muted-foreground mb-4">{error}</p>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={getAIPrediction}
+          className="w-full text-[10px] h-8 gap-2 bg-white/5 border-white/10 hover:bg-white/10"
+        >
+          <RefreshCcw className="w-3 h-3" />
+          RETRY ANALYSIS
+        </Button>
+      </LiquidGlassCard>
+    );
+  }
+
+  if (!assessment) return null;
 
   const riskColors = {
     low: 'text-emerald-400',
@@ -100,6 +144,14 @@ export function AIPredictionCard() {
             </p>
           </div>
         </div>
+        
+        <button 
+          onClick={() => { setAssessment(null); setError(null); }}
+          className="w-full text-[9px] text-muted-foreground hover:text-primary transition-colors flex items-center justify-center gap-1 mt-2 uppercase font-bold tracking-widest"
+        >
+          <RefreshCcw className="w-2.5 h-2.5" />
+          Refresh Analysis
+        </button>
       </div>
     </LiquidGlassCard>
   );
