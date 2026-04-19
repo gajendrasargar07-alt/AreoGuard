@@ -1,3 +1,4 @@
+
 "use client"
 
 import { MapPin, RefreshCw } from "lucide-react";
@@ -8,7 +9,7 @@ import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
 
 export function CurrentLocationCard() {
-  const { userLocation, isLocationLoading, setUserLocation, setLocationLoading, currentReading, fetchRealData } = useAeroStore();
+  const { isLocationLoading, setUserLocation, setLocationLoading, currentReading, fetchRealData } = useAeroStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -21,7 +22,6 @@ export function CurrentLocationCard() {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords;
-          
           let cityName = "Locating...";
           try {
             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
@@ -30,14 +30,11 @@ export function CurrentLocationCard() {
           } catch (error) {
             cityName = "Verified Location";
           }
-
           setUserLocation({ lat: latitude, lng: longitude, city: cityName });
           await fetchRealData(latitude, longitude);
           setLocationLoading(false);
         },
-        () => {
-          setLocationLoading(false);
-        }
+        () => setLocationLoading(false)
       );
     }
   };
@@ -60,11 +57,11 @@ export function CurrentLocationCard() {
     <LiquidGlassCard className="mb-4" suppressHydrationWarning>
       <div className="flex justify-between items-start mb-6" suppressHydrationWarning>
         <div suppressHydrationWarning>
-          <h2 className="text-sm font-semibold text-primary uppercase tracking-widest mb-1">Live Tracking</h2>
+          <h2 className="text-sm font-semibold text-primary uppercase tracking-widest mb-1">Grid Inspection</h2>
           <div className="flex items-center gap-2" suppressHydrationWarning>
             <MapPin className="w-4 h-4 text-secondary" />
             <span className="text-lg font-bold truncate max-w-[180px]">
-              {isLocationLoading ? "Syncing Grid..." : userLocation?.city || "Detecting..."}
+              {isLocationLoading ? "Syncing..." : currentReading?.name || "Select a Region"}
             </span>
           </div>
         </div>

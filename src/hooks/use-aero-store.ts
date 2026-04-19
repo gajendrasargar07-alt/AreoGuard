@@ -25,7 +25,6 @@ interface AeroState {
   userType: UserType;
   sensors: SensorData[];
   currentReading: SensorData | null;
-  selectedSensor: SensorData | null;
   isLocationLoading: boolean;
   waqiToken: string;
   
@@ -33,14 +32,11 @@ interface AeroState {
   setUserType: (type: UserType) => void;
   setSensors: (sensors: SensorData[]) => void;
   setCurrentReading: (reading: SensorData | null) => void;
-  setSelectedSensor: (sensor: SensorData | null) => void;
   setLocationLoading: (loading: boolean) => void;
   fetchRealData: (lat: number, lng: number) => Promise<void>;
   simulateNewReading: () => void;
 }
 
-// High-fidelity estimation of pollutant concentrations from a given AQI
-// This ensures the UI is always populated even if the API only returns a basic AQI
 const estimatePollutantsFromAQI = (aqi: number) => {
   return {
     pm25: (aqi * 12) / 50 + (Math.random() * 5),
@@ -56,7 +52,6 @@ export const useAeroStore = create<AeroState>((set, get) => ({
   userType: 'normal',
   sensors: [],
   currentReading: null,
-  selectedSensor: null,
   isLocationLoading: false,
   waqiToken: 'demo', 
 
@@ -64,14 +59,12 @@ export const useAeroStore = create<AeroState>((set, get) => ({
   setUserType: (userType) => set({ userType }),
   setSensors: (sensors) => set({ sensors }),
   setCurrentReading: (currentReading) => set({ currentReading }),
-  setSelectedSensor: (selectedSensor) => set({ selectedSensor }),
   setLocationLoading: (isLocationLoading) => set({ isLocationLoading }),
 
   fetchRealData: async (lat, lng) => {
     const token = get().waqiToken;
     
     try {
-      // 1. Fetch local station detail
       const detailRes = await fetch(`https://api.waqi.info/feed/geo:${lat};${lng}/?token=${token}`);
       const detailData = await detailRes.json();
 
@@ -96,7 +89,6 @@ export const useAeroStore = create<AeroState>((set, get) => ({
         set({ currentReading: current });
       }
 
-      // 2. Fetch stations in bounds for the Choropleth Grid
       const spread = 0.5; 
       const bounds = `${lat - spread},${lng - spread},${lat + spread},${lng + spread}`;
       const mapRes = await fetch(`https://api.waqi.info/map/bounds/?latlng=${bounds}&token=${token}`);
@@ -128,7 +120,6 @@ export const useAeroStore = create<AeroState>((set, get) => ({
 
         set({ sensors });
       } else {
-        // Fallback Mumbai Grid if API fails
         const mumbaiNodes = [
           { name: "Colaba Station", lat: 18.9067, lng: 72.8147, aqi: 45 },
           { name: "Worli Node", lat: 19.0176, lng: 72.8177, aqi: 62 },

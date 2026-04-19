@@ -24,11 +24,10 @@ function ChangeView({ center }: { center: [number, number] }) {
 }
 
 export default function MapComponent() {
-  const { userLocation, sensors, setSelectedSensor } = useAeroStore();
+  const { userLocation, sensors, setCurrentReading } = useAeroStore();
   
   const center: [number, number] = userLocation ? [userLocation.lat, userLocation.lng] : [19.0760, 72.8777];
 
-  // Generates the Atmospheric Choropleth Mesh
   const atmosphericMesh = useMemo(() => {
     if (!userLocation || sensors.length === 0) return [];
 
@@ -50,7 +49,6 @@ export default function MapComponent() {
         let nearestSensor = sensors[0];
         let minDist = Infinity;
         
-        // Proper spatial interpolation for statistics
         sensors.forEach(s => {
           const d = Math.sqrt(Math.pow(s.lat - midLat, 2) + Math.pow(s.lng - midLng, 2));
           if (d < minDist) {
@@ -70,7 +68,8 @@ export default function MapComponent() {
             pm25: nearestSensor.pm25,
             no2: nearestSensor.no2,
             o3: nearestSensor.o3,
-            co: nearestSensor.co
+            co: nearestSensor.co,
+            so2: nearestSensor.so2
           }
         });
       }
@@ -94,7 +93,6 @@ export default function MapComponent() {
         />
         <ChangeView center={center} />
 
-        {/* The Proper Choropleth Grid Overlay */}
         {atmosphericMesh.map((cell, idx) => {
           const cat = getAQICategory(cell.aqi);
           return (
@@ -106,6 +104,19 @@ export default function MapComponent() {
                 color: 'transparent', 
                 weight: 0,
                 fillOpacity: 0.35,
+              }}
+              eventHandlers={{
+                click: () => {
+                  setCurrentReading({
+                    id: `mesh-${idx}`,
+                    name: cell.sensorName,
+                    lat: cell.bounds[0][0],
+                    lng: cell.bounds[0][1],
+                    aqi: cell.aqi,
+                    ...cell.stats,
+                    timestamp: new Date().toISOString()
+                  });
+                }
               }}
             >
               <Popup>
@@ -125,7 +136,6 @@ export default function MapComponent() {
                     </div>
                   </div>
                   
-                  {/* Detailed Statistics Grid inside Popups */}
                   <div className="grid grid-cols-2 gap-3" suppressHydrationWarning>
                     <div className="space-y-0.5">
                       <p className="text-[8px] font-bold text-muted-foreground uppercase">PM 2.5</p>
@@ -144,14 +154,12 @@ export default function MapComponent() {
                       <p className="text-xs font-black text-white">{cell.stats.co.toFixed(2)} <span className="text-[7px] text-muted-foreground">ppm</span></p>
                     </div>
                   </div>
-                  <p className="text-[8px] text-muted-foreground italic border-t border-white/5 pt-2">Real-time interpolated environmental metrics.</p>
                 </div>
               </Popup>
             </Rectangle>
           );
         })}
 
-        {/* Physical Sensor Node Markers */}
         {sensors.map((sensor) => {
           const cat = getAQICategory(sensor.aqi);
           return (
@@ -166,7 +174,7 @@ export default function MapComponent() {
                 fillOpacity: 1,
               }}
               eventHandlers={{
-                click: () => setSelectedSensor(sensor)
+                click: () => setCurrentReading(sensor)
               }}
             >
               <Popup>
@@ -200,7 +208,6 @@ export default function MapComponent() {
           );
         })}
 
-        {/* User Exact Location Pulsing Marker */}
         {userLocation && (
           <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
             <Popup>
@@ -214,20 +221,6 @@ export default function MapComponent() {
       </MapContainer>
       
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background/40 via-transparent to-background/60 z-10" suppressHydrationWarning></div>
-      
-      <div className="absolute bottom-6 right-6 z-[1000] pointer-events-none" suppressHydrationWarning>
-        <div className="liquid-glass-dark p-5 rounded-2xl border border-white/10 max-w-xs backdrop-blur-3xl shadow-2xl" suppressHydrationWarning>
-          <div className="flex items-center gap-2 mb-2">
-            <div className={`w-2.5 h-2.5 rounded-full ${sensors.length > 0 ? 'bg-primary' : 'bg-muted'} animate-pulse`}></div>
-            <p className="text-[11px] font-black text-primary uppercase tracking-widest">
-              {sensors.length > 0 ? 'Regional Grid Active' : 'Initializing Grid...'}
-            </p>
-          </div>
-          <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">
-            Proper atmospheric choropleth mesh active. All statistical data (PM2.5, NO2) interpolated from active redox nodes.
-          </p>
-        </div>
-      </div>
     </div>
   );
 }
