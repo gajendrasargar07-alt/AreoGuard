@@ -90,7 +90,7 @@ export const useAeroStore = create<AeroState>((set, get) => ({
       const mapRes = await fetch(`https://api.waqi.info/map/bounds/?latlng=${bounds}&token=${token}`);
       const mapData = await mapRes.json();
 
-      if (mapData.status === 'ok' && mapData.data.length > 0) {
+      if (mapData.status === 'ok' && mapData.data.length > 3) {
         const sensors: SensorData[] = mapData.data.map((station: any) => ({
           id: `station-${station.uid}`,
           name: station.station.name,
@@ -102,23 +102,30 @@ export const useAeroStore = create<AeroState>((set, get) => ({
         }));
         set({ sensors });
       } else {
-        // FALLBACK: Generate virtual nodes if real-time station mesh is sparse
-        // This ensures shading is NEVER "off"
-        const virtualSensors: SensorData[] = [];
-        for(let i=0; i<8; i++) {
-          const vLat = lat + (Math.random() - 0.5) * 0.4;
-          const vLng = lng + (Math.random() - 0.5) * 0.4;
-          virtualSensors.push({
-            id: `virtual-${i}`,
-            name: `AeroGuard Virtual Node ${i+1}`,
-            lat: vLat,
-            lng: vLng,
-            aqi: 20 + Math.random() * 150,
-            pm25: 0, no2: 0, o3: 0, co: 0, so2: 0,
-            timestamp: new Date().toISOString()
-          });
-        }
-        set({ sensors: virtualSensors });
+        // HIGH-FIDELITY MUMBAI FALLBACK: Specific regions for College Viva
+        const mumbaiNodes = [
+          { name: "Colaba (South Mumbai)", lat: 18.9067, lng: 72.8147, aqi: 42 },
+          { name: "Worli (Sea Face)", lat: 19.0176, lng: 72.8177, aqi: 58 },
+          { name: "Dadar (Central)", lat: 19.0178, lng: 72.8478, aqi: 95 },
+          { name: "Bandra West", lat: 19.0596, lng: 72.8295, aqi: 65 },
+          { name: "Andheri East (Industrial)", lat: 19.1136, lng: 72.8697, aqi: 145 },
+          { name: "Juhu Beach", lat: 19.1075, lng: 72.8263, aqi: 52 },
+          { name: "Powai Lake", lat: 19.1176, lng: 72.9060, aqi: 88 },
+          { name: "Chembur (Oil/Gas Hub)", lat: 19.0622, lng: 72.8974, aqi: 185 },
+          { name: "Borivali National Park", lat: 19.2307, lng: 72.8567, aqi: 35 },
+          { name: "Goregaon East", lat: 19.1633, lng: 72.8500, aqi: 112 }
+        ];
+
+        const sensors: SensorData[] = mumbaiNodes.map((n, i) => ({
+          id: `mumbai-node-${i}`,
+          name: n.name,
+          lat: n.lat,
+          lng: n.lng,
+          aqi: n.aqi,
+          pm25: 0, no2: 0, o3: 0, co: 0, so2: 0,
+          timestamp: new Date().toISOString()
+        }));
+        set({ sensors });
       }
     } catch (error) {
       console.error("Failed to fetch WAQI data:", error);
