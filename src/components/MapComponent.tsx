@@ -20,12 +20,12 @@ export default function MapComponent() {
   
   const center: [number, number] = userLocation ? [userLocation.lat, userLocation.lng] : [19.0760, 72.8777];
 
-  // High-Resolution Atmospheric Mesh (Proper Choropleth Style)
+  // High-Resolution Atmospheric Mesh (Proper Choropleth)
   const atmosphericMesh = useMemo(() => {
     if (!userLocation || sensors.length === 0) return [];
 
-    const gridSize = 30; // 30x30 mesh for smoother regional transitions
-    const spread = 0.3; // Coverage radius for regional accuracy
+    const gridSize = 30; 
+    const spread = 0.4; 
     
     const startLat = userLocation.lat - spread/2;
     const startLng = userLocation.lng - spread/2;
@@ -37,7 +37,7 @@ export default function MapComponent() {
         const cellLat = startLat + i * cellSize;
         const cellLng = startLng + j * cellSize;
         
-        // Nearest-Neighbor Interpolation for Regional Definition
+        // Find nearest station for accurate regional influence
         let nearestSensor = sensors[0];
         let minDist = Infinity;
         
@@ -78,7 +78,7 @@ export default function MapComponent() {
         />
         <ChangeView center={center} />
 
-        {/* Seamless Atmospheric Choropleth Layer */}
+        {/* Proper High-Resolution Choropleth Layer */}
         {atmosphericMesh.map((cell, idx) => {
           const cat = getAQICategory(cell.aqi);
           return (
@@ -94,11 +94,11 @@ export default function MapComponent() {
             >
               <Popup>
                 <div className="p-1" suppressHydrationWarning>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Environmental Zone</p>
-                  <p className="font-bold text-xs">Primary Station: {cell.sensorName}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Regional Zone</p>
+                  <p className="font-bold text-xs">Nearest Node: {cell.sensorName}</p>
                   <div className="flex items-baseline gap-2 mt-2">
                     <span className={`text-2xl font-black ${cat.text}`}>{cell.aqi}</span>
-                    <span className="text-[10px] text-muted-foreground font-bold uppercase">AQI Level</span>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase">Index</span>
                   </div>
                 </div>
               </Popup>
@@ -106,14 +106,14 @@ export default function MapComponent() {
           );
         })}
 
-        {/* High-Tech Node Indicators */}
+        {/* Node Indicators */}
         {sensors.map((sensor) => {
           const cat = getAQICategory(sensor.aqi);
           return (
             <Circle
               key={`node-${sensor.id}`}
               center={[sensor.lat, sensor.lng]}
-              radius={80}
+              radius={100}
               pathOptions={{
                 fillColor: 'white',
                 color: cat.hex,
@@ -136,11 +136,11 @@ export default function MapComponent() {
           <div className="flex items-center gap-2 mb-2">
             <div className={`w-2 h-2 rounded-full ${sensors.length > 0 ? 'bg-primary' : 'bg-muted'} animate-pulse`}></div>
             <p className="text-[10px] font-bold text-primary uppercase tracking-widest">
-              {sensors.length > 0 ? 'Active Mesh: Regional Density' : 'Syncing Atmospheric Grid...'}
+              {sensors.length > 0 ? 'Live Atmospheric Mesh' : 'Initializing Grid...'}
             </p>
           </div>
           <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Proper choropleth rendering via localized sensor nodes. Showing specific regional variations across Mumbai.
+            Real-time WAQI integration. Showing interpolated pollution density for {userLocation?.city || 'the region'}.
           </p>
         </div>
       </div>

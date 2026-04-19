@@ -57,10 +57,9 @@ export const useAeroStore = create<AeroState>((set, get) => ({
 
   fetchRealData: async (lat, lng) => {
     const token = get().waqiToken;
-    const { simulateNewReading } = get();
     
     try {
-      // 1. Fetch hyper-local station details
+      // 1. Fetch hyper-local station details for the "Current Reading"
       const detailRes = await fetch(`https://api.waqi.info/feed/geo:${lat};${lng}/?token=${token}`);
       const detailData = await detailRes.json();
 
@@ -80,17 +79,15 @@ export const useAeroStore = create<AeroState>((set, get) => ({
           timestamp: detailData.data.time.iso,
         };
         set({ currentReading: current });
-      } else {
-        simulateNewReading();
       }
 
-      // 2. Fetch bounding box for shading
+      // 2. Fetch all stations in a bounding box for regional accuracy
       const spread = 0.5; 
       const bounds = `${lat - spread},${lng - spread},${lat + spread},${lng + spread}`;
       const mapRes = await fetch(`https://api.waqi.info/map/bounds/?latlng=${bounds}&token=${token}`);
       const mapData = await mapRes.json();
 
-      if (mapData.status === 'ok' && mapData.data.length > 3) {
+      if (mapData.status === 'ok' && mapData.data.length > 0) {
         const sensors: SensorData[] = mapData.data.map((station: any) => ({
           id: `station-${station.uid}`,
           name: station.station.name,
@@ -102,18 +99,18 @@ export const useAeroStore = create<AeroState>((set, get) => ({
         }));
         set({ sensors });
       } else {
-        // HIGH-FIDELITY MUMBAI FALLBACK: Specific regions for College Viva
+        // Fallback for Mumbai regions if API returns no data
         const mumbaiNodes = [
-          { name: "Colaba (South Mumbai)", lat: 18.9067, lng: 72.8147, aqi: 42 },
-          { name: "Worli (Sea Face)", lat: 19.0176, lng: 72.8177, aqi: 58 },
-          { name: "Dadar (Central)", lat: 19.0178, lng: 72.8478, aqi: 95 },
-          { name: "Bandra West", lat: 19.0596, lng: 72.8295, aqi: 65 },
-          { name: "Andheri East (Industrial)", lat: 19.1136, lng: 72.8697, aqi: 145 },
-          { name: "Juhu Beach", lat: 19.1075, lng: 72.8263, aqi: 52 },
-          { name: "Powai Lake", lat: 19.1176, lng: 72.9060, aqi: 88 },
-          { name: "Chembur (Oil/Gas Hub)", lat: 19.0622, lng: 72.8974, aqi: 185 },
-          { name: "Borivali National Park", lat: 19.2307, lng: 72.8567, aqi: 35 },
-          { name: "Goregaon East", lat: 19.1633, lng: 72.8500, aqi: 112 }
+          { name: "Colaba", lat: 18.9067, lng: 72.8147, aqi: 45 },
+          { name: "Worli", lat: 19.0176, lng: 72.8177, aqi: 62 },
+          { name: "Dadar", lat: 19.0178, lng: 72.8478, aqi: 98 },
+          { name: "Bandra", lat: 19.0596, lng: 72.8295, aqi: 68 },
+          { name: "Andheri", lat: 19.1136, lng: 72.8697, aqi: 152 },
+          { name: "Juhu", lat: 19.1075, lng: 72.8263, aqi: 55 },
+          { name: "Powai", lat: 19.1176, lng: 72.9060, aqi: 92 },
+          { name: "Chembur", lat: 19.0622, lng: 72.8974, aqi: 192 },
+          { name: "Borivali", lat: 19.2307, lng: 72.8567, aqi: 38 },
+          { name: "Goregaon", lat: 19.1633, lng: 72.8500, aqi: 118 }
         ];
 
         const sensors: SensorData[] = mumbaiNodes.map((n, i) => ({
@@ -129,22 +126,21 @@ export const useAeroStore = create<AeroState>((set, get) => ({
       }
     } catch (error) {
       console.error("Failed to fetch WAQI data:", error);
-      simulateNewReading();
     }
   },
 
   simulateNewReading: () => {
     set((state) => {
       if (!state.userLocation) return state;
-      const pm25 = 5 + Math.random() * 45;
-      const no2 = 10 + Math.random() * 60;
-      const o3 = 20 + Math.random() * 80;
-      const co = 0.1 + Math.random() * 3;
-      const so2 = 1 + Math.random() * 15;
+      const pm25 = 10 + Math.random() * 40;
+      const no2 = 15 + Math.random() * 55;
+      const o3 = 25 + Math.random() * 75;
+      const co = 0.5 + Math.random() * 2.5;
+      const so2 = 2 + Math.random() * 12;
       
       const currentReading: SensorData = {
         id: `local-${Date.now()}`,
-        name: "Simulated Local Sensor",
+        name: "Simulated Sensor Node",
         lat: state.userLocation.lat,
         lng: state.userLocation.lng,
         pm25, no2, o3, co, so2,
