@@ -61,7 +61,7 @@ export default function Home() {
   }, [setUserLocation, setLocationLoading, setSensors]);
 
   return (
-    <main className="relative flex w-screen h-screen overflow-hidden">
+    <main className="relative flex w-screen h-screen overflow-hidden" suppressHydrationWarning>
       {/* Liquid Glass Sidebar */}
       <DashboardSidebar />
 
