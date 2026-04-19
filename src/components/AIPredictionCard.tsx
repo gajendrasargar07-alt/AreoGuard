@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { BrainCircuit, ShieldCheck, AlertCircle, RefreshCcw } from "lucide-react";
 import { LiquidGlassCard } from "./LiquidGlassCard";
 import { useAeroStore } from "@/hooks/use-aero-store";
@@ -13,10 +13,14 @@ export function AIPredictionCard() {
   const [assessment, setAssessment] = useState<PersonalizedRiskAssessmentOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lastAnalyzedReadingId = useRef<string | null>(null);
 
   const getAIPrediction = useCallback(async () => {
-    if (!userLocation || !currentReading) return;
+    if (!userLocation || !currentReading || loading) return;
     
+    // Prevent re-analyzing the exact same data point
+    if (lastAnalyzedReadingId.current === currentReading.id) return;
+
     setLoading(true);
     setError(null);
     try {
@@ -32,31 +36,40 @@ export function AIPredictionCard() {
         so2: currentReading.so2,
       });
       setAssessment(result);
+      lastAnalyzedReadingId.current = currentReading.id;
     } catch (err: any) {
-      if (err.message?.includes('429') || err.message?.includes('RESOURCE_EXHAUSTED')) {
-        setError("AI Quota Reached. Please wait a minute.");
+      const errorMsg = err.message || "";
+      if (errorMsg.includes('429') || errorMsg.includes('RESOURCE_EXHAUSTED')) {
+        setError("AI Quota Reached. Please wait ~60s before retrying.");
       } else {
-        setError("AI analysis unavailable.");
+        setError("AI analysis unavailable at this moment.");
       }
-      console.error("AI assessment failed", err);
     } finally {
       setLoading(false);
     }
-  }, [userLocation, userType, currentReading]);
+  }, [userLocation, userType, currentReading, loading]);
 
   useEffect(() => {
-    // Longer debounce to save quota on simulation spam
+    // Only auto-trigger if we don't have an assessment or error yet
+    // Long debounce to avoid hitting limits during simulation/spam
     const timer = setTimeout(() => {
-      if (!assessment && !error) {
+      if (!assessment && !error && !loading) {
         getAIPrediction();
       }
-    }, 3000);
+    }, 5000);
     return () => clearTimeout(timer);
-  }, [getAIPrediction, assessment, error]);
+  }, [getAIPrediction, assessment, error, loading]);
+
+  const handleManualRetry = () => {
+    setError(null);
+    setAssessment(null);
+    lastAnalyzedReadingId.current = null;
+    getAIPrediction();
+  };
 
   if (loading) {
     return (
-      <LiquidGlassCard className="mb-4 animate-pulse">
+      <LiquidGlassCard className="mb-4 animate-pulse" suppressHydrationWarning>
         <div className="flex items-center gap-3 mb-4">
           <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
             <BrainCircuit className="w-5 h-5 text-primary animate-pulse" />
@@ -73,16 +86,16 @@ export function AIPredictionCard() {
 
   if (error) {
     return (
-      <LiquidGlassCard className="mb-4 border-destructive/20 bg-destructive/5">
+      <LiquidGlassCard className="mb-4 border-destructive/20 bg-destructive/5" suppressHydrationWarning>
         <div className="flex items-center gap-3 mb-4">
           <AlertCircle className="w-5 h-5 text-destructive" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-destructive">AI Advisor Paused</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-destructive">Advisor Paused</h3>
         </div>
-        <p className="text-[11px] text-muted-foreground mb-4">{error}</p>
+        <p className="text-[11px] text-muted-foreground mb-4 leading-relaxed">{error}</p>
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={getAIPrediction}
+          onClick={handleManualRetry}
           className="w-full text-[10px] h-8 gap-2 bg-white/5 border-white/10 hover:bg-white/10"
         >
           <RefreshCcw className="w-3 h-3" />
@@ -102,8 +115,8 @@ export function AIPredictionCard() {
   };
 
   return (
-    <LiquidGlassCard className="mb-4">
-      <div className="flex items-center gap-3 mb-4" suppressHydrationWarning>
+    <LiquidGlassCard className="mb-4" suppressHydrationWarning>
+      <div className="flex items-center gap-3 mb-4">
         <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
           <BrainCircuit className="w-5 h-5 text-primary" />
         </div>
@@ -113,8 +126,8 @@ export function AIPredictionCard() {
         </div>
       </div>
 
-      <div className="space-y-4" suppressHydrationWarning>
-        <div suppressHydrationWarning>
+      <div className="space-y-4">
+        <div>
           <div className="flex justify-between items-center mb-1">
             <span className="text-[11px] font-bold text-muted-foreground uppercase">Risk Level</span>
             <span className={`text-xs font-black uppercase tracking-widest ${riskColors[assessment.riskLevel]}`}>
@@ -129,15 +142,15 @@ export function AIPredictionCard() {
           </div>
         </div>
 
-        <div className="bg-white/5 rounded-xl p-3 border border-white/5" suppressHydrationWarning>
+        <div className="bg-white/5 rounded-xl p-3 border border-white/5">
           <p className="text-xs text-muted-foreground leading-relaxed italic">
             "{assessment.assessment}"
           </p>
         </div>
 
-        <div className="flex items-start gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20" suppressHydrationWarning>
+        <div className="flex items-start gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20">
           <ShieldCheck className="w-5 h-5 text-primary shrink-0" />
-          <div suppressHydrationWarning>
+          <div>
             <p className="text-[11px] font-bold text-primary uppercase mb-1">Actionable Advice</p>
             <p className="text-[11px] text-primary/80 leading-relaxed font-medium">
               {assessment.actionableAdvice}
@@ -146,7 +159,7 @@ export function AIPredictionCard() {
         </div>
         
         <button 
-          onClick={() => { setAssessment(null); setError(null); }}
+          onClick={handleManualRetry}
           className="w-full text-[9px] text-muted-foreground hover:text-primary transition-colors flex items-center justify-center gap-1 mt-2 uppercase font-bold tracking-widest"
         >
           <RefreshCcw className="w-2.5 h-2.5" />

@@ -23,7 +23,7 @@ export default function Home() {
 
   useEffect(() => {
     setLocationLoading(true);
-    if (navigator.geolocation) {
+    if (typeof window !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords;
@@ -67,7 +67,7 @@ export default function Home() {
 
       <DashboardSidebar />
 
-      <div className="fixed top-6 right-6 z-[2000] flex gap-4 pointer-events-none">
+      <div className="fixed top-6 right-6 z-[2000] flex gap-4 pointer-events-none" suppressHydrationWarning>
         <div className="liquid-glass-dark px-6 py-3 rounded-2xl border border-white/10 flex items-center gap-4 shadow-2xl backdrop-blur-3xl">
           <div className="flex flex-col">
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Protocol</span>

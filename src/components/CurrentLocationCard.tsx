@@ -1,3 +1,4 @@
+
 "use client"
 
 import { MapPin, RefreshCw } from "lucide-react";
@@ -46,12 +47,17 @@ export function CurrentLocationCard() {
   const localAqi = currentReading?.aqi || 0;
   const cat = getAQICategory(localAqi);
 
-  const formattedTime = mounted && currentReading 
-    ? new Date(currentReading.timestamp).toLocaleTimeString() 
-    : 'Syncing...';
+  const getFormattedTime = () => {
+    if (!mounted || !currentReading) return 'Syncing...';
+    try {
+      return new Date(currentReading.timestamp).toLocaleTimeString();
+    } catch (e) {
+      return 'Recent';
+    }
+  };
 
   return (
-    <LiquidGlassCard className="mb-4">
+    <LiquidGlassCard className="mb-4" suppressHydrationWarning>
       <div className="flex justify-between items-start mb-6" suppressHydrationWarning>
         <div suppressHydrationWarning>
           <h2 className="text-sm font-semibold text-primary uppercase tracking-widest mb-1">Live Tracking</h2>
@@ -75,7 +81,7 @@ export function CurrentLocationCard() {
 
       <div className="flex items-end justify-between bg-white/5 p-4 rounded-2xl border border-white/10" suppressHydrationWarning>
         <div suppressHydrationWarning>
-          <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1" suppressHydrationWarning>Local AQI Index</p>
+          <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Local AQI Index</p>
           <div className="flex items-baseline gap-2">
             <span className={`text-5xl font-black tracking-tighter transition-colors duration-500 ${cat.text}`}>
               {localAqi || '--'}
@@ -87,8 +93,8 @@ export function CurrentLocationCard() {
           <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase mb-2 transition-colors duration-500 ${cat.color} text-black`}>
             {localAqi ? cat.label : 'Pending'}
           </div>
-          <p className="text-[10px] text-muted-foreground italic" suppressHydrationWarning>
-            {currentReading && mounted ? `Last update: ${formattedTime}` : 'Syncing...'}
+          <p className="text-[10px] text-muted-foreground italic">
+            {getFormattedTime()}
           </p>
         </div>
       </div>
