@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useEffect } from 'react';
@@ -44,7 +43,7 @@ export default function MapComponent() {
               fillColor: '#2BEFED', 
               color: 'white', 
               weight: 2, 
-              fillOpacity: 0.4,
+              fillOpacity: 0.5,
               dashArray: '5, 10'
             }}
           >
@@ -60,31 +59,41 @@ export default function MapComponent() {
         {/* Regional Heatmap Shading */}
         {sensors.map((sensor) => {
           const cat = getAQICategory(sensor.aqi);
-          const color = cat.color.replace('bg-', '');
           
           return (
             <React.Fragment key={sensor.id}>
-              {/* Core Shading Layer */}
+              {/* Outer Atmosphere Shading Layer */}
               <Circle
                 center={[sensor.lat, sensor.lng]}
-                radius={2500} // Large radius for regional shading
+                radius={3500} // Extra large for ambient flow
                 pathOptions={{
-                  fillColor: color,
+                  fillColor: cat.hex,
                   color: 'transparent',
-                  fillOpacity: 0.15,
+                  fillOpacity: 0.1,
                 }}
                 eventHandlers={{
                   click: () => setSelectedSensor(sensor)
                 }}
               />
-              {/* Inner High-Intensity Glow */}
+              {/* Regional Shading Layer */}
               <Circle
                 center={[sensor.lat, sensor.lng]}
-                radius={1200}
+                radius={2000}
                 pathOptions={{
-                  fillColor: color,
+                  fillColor: cat.hex,
                   color: 'transparent',
-                  fillOpacity: 0.25,
+                  fillOpacity: 0.2,
+                }}
+              />
+              {/* Inner High-Intensity Core */}
+              <Circle
+                center={[sensor.lat, sensor.lng]}
+                radius={800}
+                pathOptions={{
+                  fillColor: cat.hex,
+                  color: cat.hex,
+                  weight: 1,
+                  fillOpacity: 0.35,
                 }}
               >
                 <Popup>
@@ -120,10 +129,10 @@ export default function MapComponent() {
         <div className="liquid-glass-dark p-4 rounded-xl border border-white/10 max-w-xs backdrop-blur-3xl shadow-2xl">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-            <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Regional Heatmap Active</p>
+            <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Atmospheric Heatmap Active</p>
           </div>
           <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Visualizing atmospheric density gradients across {sensors.length} urban micro-climates. Shading indicates localized redox concentration zones.
+            Visualizing redox density gradients. Colors represent localized AQI indices across regional micro-climates.
           </p>
         </div>
       </div>

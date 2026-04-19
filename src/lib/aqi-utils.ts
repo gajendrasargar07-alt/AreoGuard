@@ -11,12 +11,12 @@ export const calculateAQI = (pm25: number, no2: number, o3: number, co: number, 
 };
 
 export const getAQICategory = (aqi: number) => {
-  if (aqi <= 50) return { label: 'Good', color: 'bg-emerald-500', text: 'text-emerald-400', ring: 'ring-emerald-500/50' };
-  if (aqi <= 100) return { label: 'Moderate', color: 'bg-yellow-500', text: 'text-yellow-400', ring: 'ring-yellow-500/50' };
-  if (aqi <= 150) return { label: 'Unhealthy for Sensitive Groups', color: 'bg-orange-500', text: 'text-orange-400', ring: 'ring-orange-500/50' };
-  if (aqi <= 200) return { label: 'Unhealthy', color: 'bg-red-500', text: 'text-red-400', ring: 'ring-red-500/50' };
-  if (aqi <= 300) return { label: 'Very Unhealthy', color: 'bg-purple-500', text: 'text-purple-400', ring: 'ring-purple-500/50' };
-  return { label: 'Hazardous', color: 'bg-rose-900', text: 'text-rose-500', ring: 'ring-rose-900/50' };
+  if (aqi <= 50) return { label: 'Good', color: 'bg-emerald-500', text: 'text-emerald-400', hex: '#10b981' };
+  if (aqi <= 100) return { label: 'Moderate', color: 'bg-yellow-500', text: 'text-yellow-400', hex: '#f97316' }; // Using orange for moderate to pop better on dark
+  if (aqi <= 150) return { label: 'Unhealthy for Sensitive Groups', color: 'bg-orange-500', text: 'text-orange-400', hex: '#f97316' };
+  if (aqi <= 200) return { label: 'Unhealthy', color: 'bg-red-500', text: 'text-red-400', hex: '#ef4444' };
+  if (aqi <= 300) return { label: 'Very Unhealthy', color: 'bg-purple-500', text: 'text-purple-400', hex: '#a855f7' };
+  return { label: 'Hazardous', color: 'bg-rose-900', text: 'text-rose-500', hex: '#e11d48' };
 };
 
 export const getChemistryExplainer = (pollutant: string) => {
