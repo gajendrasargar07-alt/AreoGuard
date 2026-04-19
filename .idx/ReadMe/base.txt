@@ -1,0 +1,117 @@
+{
+  "projectName": "AeroGuard",
+  "version": "Full-Stack v2.1 (Location-Based + Liquid Glassmorphism Upgrade)",
+  "description": "Build a complete full-stack web application called **AeroGuard** that simulates a real electrochemical sensor network for environmental monitoring. The app is **fully location-based**: it automatically fetches the user's current geolocation (browser Geolocation API), centers the interactive map on their exact location, and displays hyper-local real-time AQI data, personalized respiratory risk alerts, and AI predictions tailored to 'Your Current Location'. It also supports manual location fallback. The entire UI must use an **extremely high-resolution liquid glassmorphism** theme – premium frosted liquid-glass cards with ultra-heavy backdrop blur, translucent liquid-like refraction effects, fluid animations, and sharp high-res details. This is a chemistry-based college project prototype – keep all code beginner-friendly with detailed comments explaining the redox chemistry connection at every stage.",
+  "tagline": "Protect Your Breath • Live AQI Heatmap from Your Location • Electrochemical Sensors",
+  "targetAudience": "College students, professors, and people with respiratory diseases. Auto-detects user's location (Panvel/Navi Mumbai focus for demo) but works anywhere in the world.",
+  "coreTheme": "Extremely high-resolution liquid glassmorphism on dark base. Use emerald-neon accents, heavy backdrop-blur-3xl, translucent glass cards with liquid refraction (SVG filters + inset shadows), fluid hover morphing, and ultra-sharp high-res typography. App name 'AeroGuard' prominently displayed with glass logo effect.",
+  "techStack": {
+    "framework": "Next.js 15 (App Router) with TypeScript",
+    "styling": "Tailwind CSS + shadcn/ui + custom liquid glassmorphism CSS (backdrop-blur-3xl, bg-white/10, border-white/20, SVG filters for liquid refraction)",
+    "map": "react-leaflet (dynamic import for SSR safety)",
+    "backend": "Next.js API routes",
+    "database": "MongoDB Atlas (use Mongoose)",
+    "realTime": "Socket.io (live sensor + location updates)",
+    "auth": "NextAuth.js v5 (simple demo login with userType)",
+    "stateManagement": "Zustand",
+    "externalAPIs": "WAQI API – proxy through backend (use /feed/geo:lat;lon/ for user location)",
+    "AI": "Simple linear trend analysis in backend",
+    "geolocation": "Native browser Geolocation API + optional reverse geocoding (Nominatim)",
+    "deployment": "Ready for Vercel"
+  },
+  "folderStructure": {
+    "root": "aeroguard/",
+    "keyFolders": [
+      "app/ (layout.tsx, page.tsx, dashboard/page.tsx, api/ routes)",
+      "components/ (Map.tsx, DashboardSidebar.tsx, CurrentLocationCard.tsx, AlertsPanel.tsx, AIPredictionCard.tsx, SensorFeed.tsx, LiquidGlassCard.tsx)",
+      "lib/ (mongodb.ts, socket.ts, aqi-utils.ts, chemistry-explain.ts, geolocation.ts)",
+      "models/ (SensorData.ts, UserProfile.ts, AQIHistory.ts)",
+      "hooks/ (useSocket.ts, useAQI.ts, useUserLocation.ts)",
+      "types/ (index.ts)"
+    ]
+  },
+  "databaseSchema": {
+    "SensorData": {
+      "fields": {
+        "_id": "ObjectId",
+        "stationId": "string",
+        "lat": "number",
+        "lon": "number",
+        "city": "string",
+        "aqi": "number",
+        "pm25": "number",
+        "no2": "number",
+        "o3": "number",
+        "co": "number",
+        "so2": "number",
+        "timestamp": "Date",
+        "sensorType": "string (default: 'electrochemical')"
+      }
+    },
+    "AQIHistory": {
+      "fields": {
+        "stationId": "string",
+        "aqiHistory": "array of {timestamp: Date, aqi: number}",
+        "lastUpdated": "Date"
+      }
+    },
+    "UserProfile": {
+      "fields": {
+        "userId": "string",
+        "userType": "enum('normal', 'patient')",
+        "name": "string",
+        "healthNotes": "string"
+      }
+    }
+  },
+  "apiEndpoints": {
+    "GET /api/sensors": "Return live sensors near user's location (or global fallback)",
+    "POST /api/sensors/refresh": "Simulate electrochemical readings near current location",
+    "GET /api/aqi/history/:stationId": "Return history for AI prediction",
+    "POST /api/predict": "Simple AI trend analysis + personalized risk (location-aware)",
+    "GET /api/waqi/proxy": "Backend proxy to WAQI (support /feed/geo:lat;lon/ for user location)",
+    "WebSocket events": ["sensor-update", "location-update", "aqi-prediction-update"]
+  },
+  "coreFeatures": [
+    {
+      "name": "Location-Based Auto-Detection",
+      "details": "On load, request browser geolocation (navigator.geolocation.getCurrentPosition). Center map on user's exact lat/lon. Show prominent 'Your Current Location' card with hyper-local AQI, city name (via reverse geocoding), and live data. Fallback to manual search or Panvel demo. All data (map markers, alerts, AI) updates based on user's location."
+    },
+    {
+      "name": "Interactive Leaflet Map",
+      "details": "Full-screen map auto-centered on user location. Color-coded liquid-glass style circle markers (size = pollution radius). Popups with chemistry details and location-specific risk."
+    },
+    {
+      "name": "Real-time Liquid Glass Dashboard",
+      "details": "Fixed sidebar with ultra high-res liquid glassmorphism cards: Current Location AQI, live electrochemical sensor feed, personalized alerts, AI prediction."
+    },
+    {
+      "name": "User Mode Toggle",
+      "details": "Normal vs Respiratory Patient – stricter thresholds for patients, applied to current location data."
+    },
+    {
+      "name": "Risk Alerts & AI Prediction",
+      "details": "Location-aware personalized messages. AI uses trend from nearby sensors."
+    },
+    {
+      "name": "Electrochemical Sensor Simulation",
+      "details": "Button to simulate new readings near user's location. Comments explain redox → current → AQI flow."
+    }
+  ],
+  "uiRequirements": {
+    "theme": "EXTREMELY HIGH-RESOLUTION LIQUID GLASSMORPHISM. Base: dark zinc-950 with subtle emerald gradients. Every card/panel MUST use: bg-white/10 or bg-black/30, backdrop-blur-3xl, border border-white/20, box-shadow with inset highlights for liquid refraction (use Tailwind + custom CSS/SVG filters). Add fluid liquid-like hover animations (scale + glow + slight morph). High-res typography (Inter font, sharp edges). Sidebar and overlays must feel like floating premium liquid glass panels. Include subtle animated liquid bubbles or refraction lines on hover for 'liquid' effect. Make it look ultra-modern and premium like Apple's Liquid Glass.",
+    "layout": "Fixed glass sidebar (380px) + full-screen map. All elements have heavy blur and transparency. Responsive with mobile glass collapse.",
+    "animations": "Fluid CSS transitions, live Socket.io updates with glass toasts, marker pulse with liquid glow, geolocation loading animation.",
+    "accessibility": "High contrast glass effects, ARIA labels.",
+    "vivaReady": "Every component has inline comments: 'Liquid glassmorphism applied here + chemistry data flow from electrochemical sensors'."
+  },
+  "chemistryConnectionRequirement": "MUST be explicit in UI and code: 'Electrochemical sensors detect gases via redox reactions (e.g., NO₂ reduction produces current proportional to concentration). This dashboard visualizes the output of such a sensor network, now location-based for your exact position.' Include a floating 'Science Behind' liquid glass panel.",
+  "constraints": [
+    "Prototype – clean, well-commented, beginner-friendly code.",
+    "Geolocation must request permission gracefully with fallback.",
+    "Liquid glassmorphism must be extremely high-resolution and detailed (use backdrop-blur-3xl, SVG filters where possible).",
+    "Deployable on Vercel free tier with MongoDB Atlas.",
+    "Include .env.example, full README.md with setup, geolocation notes, viva script, and chemistry tie-in."
+  ],
+  "outputInstructions": "Generate the COMPLETE ready-to-run Next.js project in folder 'aeroguard/'. Output every file's full code with TypeScript, extremely detailed liquid glassmorphism CSS, geolocation hooks, and best practices. Start with a clear plan summary, then provide files one by one. Make the app name 'AeroGuard' prominent. Ensure location auto-fetch works on load and the UI looks like premium ultra high-resolution liquid glass."
+}

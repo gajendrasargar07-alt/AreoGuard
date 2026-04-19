@@ -1,0 +1,43 @@
+I am building a college SLA Stage 3 prototype based on my Stage 2 chemistry topic: “Electrochemical Sensors for Environmental Monitoring and Sustainable Development.”
+
+Project idea:
+I want to build an advanced web application called a “Respiratory Risk AQI Heatmap.” The system will simulate electrochemical sensor networks using real-time air quality APIs and visualize pollution data on an interactive map. It will specifically target people with respiratory diseases (like asthma and COPD) and provide personalized risk alerts and recommendations.
+
+Core Features Required:
+
+1. Interactive map (preferably using Leaflet or similar)
+2. Real-time AQI data integration using APIs (like OpenWeatherMap or WAQI)
+3. Color-coded heatmap based on AQI levels
+4. Marker-based or area-based pollution visualization
+5. User toggle:
+   - Normal user
+   - Respiratory patient
+6. Risk analysis system:
+   - Convert AQI into health risk levels
+   - Provide alerts like “Avoid area,” “Wear mask,” etc.
+7. Simple AI-based prediction:
+   - Use trend analysis (previous AQI vs current AQI)
+   - Predict short-term AQI changes
+8. Clean UI with dashboard elements (AQI value, gas levels, status)
+
+Constraints:
+
+- This is a prototype, not a full production system
+- Keep it simple but make it LOOK advanced
+- Use only frontend technologies if possible (HTML, CSS, JS)
+- Avoid overly complex machine learning models
+- Code should be beginner-friendly but structured
+
+What I want from you:
+
+1. Step-by-step implementation plan
+2. Full working code (HTML, CSS, JS)
+3. API integration setup
+4. Explanation of each part (for viva)
+5. Suggestions to improve UI/UX
+6. Optional: ideas to make it look more “AI-powered”
+
+Important:
+Make sure the system clearly connects to electrochemical sensors (data collection → analysis → decision support), because this is a chemistry-based project.
+
+Start by giving me the complete project structure
