@@ -1,3 +1,4 @@
+
 "use client"
 
 import { create } from 'zustand';
@@ -58,7 +59,6 @@ export const useAeroStore = create<AeroState>((set, get) => ({
     const token = get().waqiToken;
     
     try {
-      // 1. Fetch hyper-local station details for the "Current Reading"
       const detailRes = await fetch(`https://api.waqi.info/feed/geo:${lat};${lng}/?token=${token}`);
       const detailData = await detailRes.json();
 
@@ -80,7 +80,6 @@ export const useAeroStore = create<AeroState>((set, get) => ({
         set({ currentReading: current });
       }
 
-      // 2. Fetch all stations in a bounding box for regional accuracy
       const spread = 0.5; 
       const bounds = `${lat - spread},${lng - spread},${lat + spread},${lng + spread}`;
       const mapRes = await fetch(`https://api.waqi.info/map/bounds/?latlng=${bounds}&token=${token}`);
@@ -97,7 +96,6 @@ export const useAeroStore = create<AeroState>((set, get) => ({
           timestamp: station.station.time,
         })).filter((s: SensorData) => s.aqi > 0);
         
-        // Add the current precise reading to the sensor list for map mesh accuracy
         const currentReading = get().currentReading;
         if (currentReading) {
           sensors.push(currentReading);
@@ -105,7 +103,6 @@ export const useAeroStore = create<AeroState>((set, get) => ({
 
         set({ sensors });
       } else {
-        // Fallback for regions with no WAQI stations (High-Precision Mumbai Mock Nodes)
         const mumbaiNodes = [
           { name: "Colaba Station", lat: 18.9067, lng: 72.8147, aqi: 45 },
           { name: "Worli Node", lat: 19.0176, lng: 72.8177, aqi: 62 },
@@ -114,7 +111,7 @@ export const useAeroStore = create<AeroState>((set, get) => ({
           { name: "Andheri Hub", lat: 19.1136, lng: 72.8697, aqi: 152 },
           { name: "Juhu Beach", lat: 19.1075, lng: 72.8263, aqi: 55 },
           { name: "Powai Lake", lat: 19.1176, lng: 72.9060, aqi: 92 },
-          { name: "Chembur Ind.", lat: 19.0622, lng: 72.8974, aqi: 192 },
+          { name: "Chembur Ind. (Red Zone)", lat: 19.0622, lng: 72.8974, aqi: 245 },
           { name: "Borivali East", lat: 19.2307, lng: 72.8567, aqi: 38 },
           { name: "Goregaon Node", lat: 19.1633, lng: 72.8500, aqi: 118 }
         ];
@@ -125,7 +122,9 @@ export const useAeroStore = create<AeroState>((set, get) => ({
           lat: n.lat,
           lng: n.lng,
           aqi: n.aqi,
-          pm25: 0, no2: 0, o3: 0, co: 0, so2: 0,
+          pm25: n.aqi > 200 ? 180 : 20, 
+          no2: n.aqi > 200 ? 90 : 15, 
+          o3: 40, co: 1.2, so2: 5,
           timestamp: new Date().toISOString()
         }));
         set({ sensors });
@@ -139,8 +138,9 @@ export const useAeroStore = create<AeroState>((set, get) => ({
     set((state) => {
       if (!state.userLocation) return state;
       
-      const pm25 = 15 + Math.random() * 80;
-      const no2 = 20 + Math.random() * 60;
+      const isRedZone = Math.random() > 0.5;
+      const pm25 = isRedZone ? 180 + Math.random() * 100 : 15 + Math.random() * 80;
+      const no2 = isRedZone ? 90 + Math.random() * 50 : 20 + Math.random() * 60;
       const o3 = 30 + Math.random() * 100;
       const co = 1.0 + Math.random() * 5.0;
       const so2 = 5 + Math.random() * 25;
@@ -149,7 +149,7 @@ export const useAeroStore = create<AeroState>((set, get) => ({
       
       const simulatedNode: SensorData = {
         id: `sim-${Date.now()}`,
-        name: "Local Redox Sensor Node",
+        name: isRedZone ? "Localized High-Pollution Redox Node" : "Local Atmospheric Node",
         lat: state.userLocation.lat,
         lng: state.userLocation.lng,
         pm25, no2, o3, co, so2,
@@ -157,7 +157,6 @@ export const useAeroStore = create<AeroState>((set, get) => ({
         timestamp: new Date().toISOString(),
       };
 
-      // Add to sensors so it immediately affects the choropleth grid
       const updatedSensors = [simulatedNode, ...state.sensors.filter(s => s.id !== simulatedNode.id)];
 
       return { 
