@@ -1,9 +1,10 @@
+
 "use client"
 
-import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Circle, Popup, useMap } from 'react-leaflet';
+import React, { useEffect, useMemo } from 'react';
+import { MapContainer, TileLayer, Rectangle, Popup, useMap, Polygon } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useAeroStore } from '@/hooks/use-aero-store';
+import { useAeroStore, SensorData } from '@/hooks/use-aero-store';
 import { getAQICategory } from '@/lib/aqi-utils';
 
 function ChangeView({ center }: { center: [number, number] }) {
@@ -17,7 +18,49 @@ function ChangeView({ center }: { center: [number, number] }) {
 export default function MapComponent() {
   const { userLocation, sensors, setSelectedSensor } = useAeroStore();
   
-  const center: [number, number] = userLocation ? [userLocation.lat, userLocation.lng] : [19.0760, 72.8777]; // Mumbai Center
+  const center: [number, number] = userLocation ? [userLocation.lat, userLocation.lng] : [19.0760, 72.8777];
+
+  // Generate a Choropleth Grid based on current location
+  const atmosphericGrid = useMemo(() => {
+    if (!userLocation || sensors.length === 0) return [];
+
+    const gridSize = 10; // 10x10 grid for high density
+    const spread = 0.12; // Degrees of coverage (~12km)
+    
+    const startLat = userLocation.lat - spread/2;
+    const startLng = userLocation.lng - spread/2;
+    const cellSize = spread / gridSize;
+
+    const cells = [];
+    for (let i = 0; i < gridSize; i++) {
+      for (let j = 0; j < gridSize; j++) {
+        const cellLat = startLat + i * cellSize;
+        const cellLng = startLng + j * cellSize;
+        
+        // Find nearest sensor for this cell (Voronoi/Interpolation simulation)
+        let nearestSensor = sensors[0];
+        let minDist = Infinity;
+        
+        sensors.forEach(s => {
+          const d = Math.sqrt(Math.pow(s.lat - (cellLat + cellSize/2), 2) + Math.pow(s.lng - (cellLng + cellSize/2), 2));
+          if (d < minDist) {
+            minDist = d;
+            nearestSensor = s;
+          }
+        });
+
+        cells.push({
+          bounds: [
+            [cellLat, cellLng],
+            [cellLat + cellSize, cellLng + cellSize]
+          ] as [[number, number], [number, number]],
+          aqi: nearestSensor.aqi,
+          sensorName: nearestSensor.name
+        });
+      }
+    }
+    return cells;
+  }, [userLocation, sensors]);
 
   return (
     <div className="w-full h-full relative">
@@ -34,89 +77,54 @@ export default function MapComponent() {
         />
         <ChangeView center={center} />
 
-        {/* User Location Glow */}
-        {userLocation && (
-          <Circle
-            center={[userLocation.lat, userLocation.lng]}
-            radius={800}
-            pathOptions={{ 
-              fillColor: '#2BEFED', 
-              color: 'white', 
-              weight: 2, 
-              fillOpacity: 0.5,
-              dashArray: '5, 10'
-            }}
-          >
-            <Popup>
-              <div className="p-2">
-                <p className="font-bold text-primary">Your Core Node</p>
-                <p className="text-xs text-muted-foreground">{userLocation.city}</p>
-              </div>
-            </Popup>
-          </Circle>
-        )}
+        {/* Choropleth Grid Shading */}
+        {atmosphericGrid.map((cell, idx) => {
+          const cat = getAQICategory(cell.aqi);
+          return (
+            <Rectangle
+              key={`cell-${idx}`}
+              bounds={cell.bounds}
+              pathOptions={{
+                fillColor: cat.hex,
+                color: 'rgba(255,255,255,0.05)',
+                weight: 0.5,
+                fillOpacity: 0.35,
+              }}
+            >
+              <Popup>
+                <div className="p-1">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Atmospheric Zone</p>
+                  <p className="font-bold text-sm">Influence: {cell.sensorName}</p>
+                  <div className="flex items-baseline gap-2 mt-2">
+                    <span className={`text-2xl font-black ${cat.text}`}>{cell.aqi}</span>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase">Zone AQI</span>
+                  </div>
+                </div>
+              </Popup>
+            </Rectangle>
+          );
+        })}
 
-        {/* Regional Heatmap Shading */}
+        {/* Sensor Markers (Subtle Indicators) */}
         {sensors.map((sensor) => {
           const cat = getAQICategory(sensor.aqi);
-          
           return (
-            <React.Fragment key={sensor.id}>
-              {/* Outer Atmosphere Shading Layer */}
-              <Circle
-                center={[sensor.lat, sensor.lng]}
-                radius={3500} // Extra large for ambient flow
-                pathOptions={{
-                  fillColor: cat.hex,
-                  color: 'transparent',
-                  fillOpacity: 0.1,
-                }}
-                eventHandlers={{
-                  click: () => setSelectedSensor(sensor)
-                }}
-              />
-              {/* Regional Shading Layer */}
-              <Circle
-                center={[sensor.lat, sensor.lng]}
-                radius={2000}
-                pathOptions={{
-                  fillColor: cat.hex,
-                  color: 'transparent',
-                  fillOpacity: 0.2,
-                }}
-              />
-              {/* Inner High-Intensity Core */}
-              <Circle
-                center={[sensor.lat, sensor.lng]}
-                radius={800}
-                pathOptions={{
-                  fillColor: cat.hex,
-                  color: cat.hex,
-                  weight: 1,
-                  fillOpacity: 0.35,
-                }}
-              >
-                <Popup>
-                  <div className="p-1">
-                    <p className="font-extrabold text-sm uppercase tracking-tight">{sensor.name}</p>
-                    <div className="flex items-baseline gap-2 mt-1">
-                      <span className={`text-2xl font-black ${cat.text}`}>{sensor.aqi}</span>
-                      <span className="text-[10px] text-muted-foreground font-bold uppercase">AQI Index</span>
-                    </div>
-                    <div className="mt-2 pt-2 border-t border-white/10 grid grid-cols-2 gap-x-4 gap-y-1">
-                      <div className="flex flex-col">
-                        <span className="text-[8px] uppercase text-muted-foreground">PM2.5</span>
-                        <span className="text-[10px] font-mono">{sensor.pm25.toFixed(1)}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[8px] uppercase text-muted-foreground">NO2</span>
-                        <span className="text-[10px] font-mono">{sensor.no2.toFixed(1)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </Popup>
-              </Circle>
-            </React.Fragment>
+            <Rectangle
+              key={`node-${sensor.id}`}
+              bounds={[
+                [sensor.lat - 0.001, sensor.lng - 0.001],
+                [sensor.lat + 0.001, sensor.lng + 0.001]
+              ]}
+              pathOptions={{
+                fillColor: 'white',
+                color: cat.hex,
+                weight: 2,
+                fillOpacity: 0.8,
+              }}
+              eventHandlers={{
+                click: () => setSelectedSensor(sensor)
+              }}
+            />
           );
         })}
       </MapContainer>
@@ -129,10 +137,10 @@ export default function MapComponent() {
         <div className="liquid-glass-dark p-4 rounded-xl border border-white/10 max-w-xs backdrop-blur-3xl shadow-2xl">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-            <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Atmospheric Heatmap Active</p>
+            <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Regional Choropleth Active</p>
           </div>
           <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Visualizing redox density gradients. Colors represent localized AQI indices across regional micro-climates.
+            Interpolating electrochemical sensor data across localized atmospheric grids. Shading represents regional pollution density.
           </p>
         </div>
       </div>
