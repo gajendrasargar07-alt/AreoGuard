@@ -1,3 +1,4 @@
+
 "use client"
 
 import dynamic from 'next/dynamic';
@@ -61,14 +62,14 @@ export default function Home() {
   }, [setUserLocation, setLocationLoading, setSensors]);
 
   return (
-    <main className="relative flex w-screen h-screen overflow-hidden" suppressHydrationWarning>
-      {/* Liquid Glass Sidebar */}
-      <DashboardSidebar />
-
-      {/* Main Map Content */}
-      <div className="flex-1 ml-[380px] relative h-full">
+    <main className="relative w-screen h-screen overflow-hidden" suppressHydrationWarning>
+      {/* Main Map Content - Now absolute to fill entire screen */}
+      <div className="absolute inset-0 z-0">
         <MapComponent />
       </div>
+
+      {/* Liquid Glass Sidebar - Overlays the map */}
+      <DashboardSidebar />
 
       {/* High-res Detail overlays */}
       <div className="fixed top-6 right-6 z-[2000] flex gap-4 pointer-events-none">
