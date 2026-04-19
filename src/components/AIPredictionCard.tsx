@@ -19,7 +19,7 @@ export function AIPredictionCard() {
     if (!userLocation || !currentReading || loading) return;
     
     // Prevent re-analyzing the exact same data point
-    if (lastAnalyzedReadingId.current === currentReading.id) return;
+    if (lastAnalyzedReadingId.current === currentReading.id && assessment) return;
 
     setLoading(true);
     setError(null);
@@ -47,18 +47,17 @@ export function AIPredictionCard() {
     } finally {
       setLoading(false);
     }
-  }, [userLocation, userType, currentReading, loading]);
+  }, [userLocation, userType, currentReading, loading, assessment]);
 
   useEffect(() => {
-    // Only auto-trigger if we don't have an assessment or error yet
-    // Long debounce to avoid hitting limits during simulation/spam
+    // Longer debounce to avoid hitting limits
     const timer = setTimeout(() => {
-      if (!assessment && !error && !loading) {
+      if (!assessment && !error && !loading && currentReading) {
         getAIPrediction();
       }
-    }, 5000);
+    }, 4000);
     return () => clearTimeout(timer);
-  }, [getAIPrediction, assessment, error, loading]);
+  }, [getAIPrediction, assessment, error, loading, currentReading]);
 
   const handleManualRetry = () => {
     setError(null);
