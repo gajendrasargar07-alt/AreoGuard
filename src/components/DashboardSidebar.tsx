@@ -1,3 +1,4 @@
+
 "use client"
 
 import { AeroLogo } from "./AeroLogo";
@@ -13,7 +14,7 @@ import { getChemistryExplainer } from "@/lib/aqi-utils";
 import { useState } from "react";
 
 export function DashboardSidebar() {
-  const { userType, setUserType, simulateNewReading, sensors } = useAeroStore();
+  const { userType, setUserType, simulateNewReading } = useAeroStore();
   const [showScience, setShowScience] = useState(false);
 
   return (
@@ -27,13 +28,11 @@ export function DashboardSidebar() {
 
       <ScrollArea className="flex-1 -mx-2 px-2" suppressHydrationWarning>
         <div className="space-y-6 pb-6" suppressHydrationWarning>
-          {/* Geolocation Section */}
           <CurrentLocationCard />
 
-          {/* User Profile Toggle */}
           <div className="bg-white/5 p-4 rounded-2xl border border-white/10" suppressHydrationWarning>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between" suppressHydrationWarning>
+              <div className="flex items-center gap-3" suppressHydrationWarning>
                 <Settings2 className="w-4 h-4 text-muted-foreground" />
                 <Label htmlFor="patient-mode" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                   Patient Sensitivity
@@ -52,12 +51,10 @@ export function DashboardSidebar() {
             </p>
           </div>
 
-          {/* AI Insights */}
           <AIPredictionCard />
 
-          {/* Sensor Simulation */}
           <div className="space-y-4" suppressHydrationWarning>
-            <div className="flex items-center justify-between px-1">
+            <div className="flex items-center justify-between px-1" suppressHydrationWarning>
               <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Sensor Simulation</h3>
               <Radio className="w-3 h-3 text-secondary animate-pulse" />
             </div>
@@ -69,17 +66,16 @@ export function DashboardSidebar() {
               GENERATE SENSOR DATA
             </Button>
             <p className="text-[9px] text-center text-muted-foreground px-4">
-              Simulates a local electrochemical sensor node at your detected coordinates via redox current analysis.
+              Simulates a local electrochemical sensor node at your coordinates via redox current analysis.
             </p>
           </div>
 
-          {/* Chemistry Highlight */}
           <div 
             className="p-4 rounded-2xl border border-white/5 bg-black/20 cursor-help group transition-all"
             onClick={() => setShowScience(!showScience)}
             suppressHydrationWarning
           >
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2" suppressHydrationWarning>
               <Info className="w-4 h-4 text-primary" />
               <span className="text-[10px] font-bold text-primary uppercase">Science Behind Redox</span>
             </div>
