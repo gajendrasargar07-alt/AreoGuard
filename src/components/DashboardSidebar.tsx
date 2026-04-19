@@ -65,8 +65,8 @@ export function DashboardSidebar() {
               <FlaskConical className="w-5 h-5" />
               GENERATE SENSOR DATA
             </Button>
-            <p className="text-[9px] text-center text-muted-foreground px-4">
-              Simulates a local electrochemical sensor node at your coordinates via redox current analysis.
+            <p className="text-[9px] text-center text-muted-foreground px-4 leading-relaxed font-medium">
+              Injects a new electrochemical node at your location to simulate redox current fluctuations and map variations.
             </p>
           </div>
 
@@ -77,13 +77,13 @@ export function DashboardSidebar() {
           >
             <div className="flex items-center gap-2 mb-2" suppressHydrationWarning>
               <Info className="w-4 h-4 text-primary" />
-              <span className="text-[10px] font-bold text-primary uppercase">Science Behind Redox</span>
+              <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Science Behind Redox</span>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Electro-sensors generate pA-scale current via gas reduction. Click to see the chemical data flow.
+              Sensors generate signals via gas reduction. Click for the chemical breakdown.
             </p>
             {showScience && (
-              <div className="mt-4 pt-4 border-t border-white/10 text-[10px] text-primary/80 animate-in fade-in slide-in-from-top-2">
+              <div className="mt-4 pt-4 border-t border-white/10 text-[10px] text-primary/80 animate-in fade-in slide-in-from-top-2 leading-relaxed">
                 {getChemistryExplainer('no2')}
               </div>
             )}
@@ -96,7 +96,7 @@ export function DashboardSidebar() {
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
           Node Network Sync: Active
         </span>
-        <span>v2.1 Full-Stack</span>
+        <span>AeroGuard v4.1</span>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import { BrainCircuit, ShieldCheck, AlertCircle, RefreshCcw, Sparkles } from "lucide-react";
 import { LiquidGlassCard } from "./LiquidGlassCard";
 import { useAeroStore } from "@/hooks/use-aero-store";
@@ -33,6 +33,7 @@ export function AIPredictionCard() {
       });
       setAssessment(result);
     } catch (err: any) {
+      console.error("AI Analysis Error:", err);
       const errorMsg = err.message || "";
       if (errorMsg.includes('429') || errorMsg.includes('RESOURCE_EXHAUSTED')) {
         setError("AI Quota Reached. Please wait ~60s before retrying.");
@@ -68,9 +69,9 @@ export function AIPredictionCard() {
       <LiquidGlassCard className="mb-4 border-destructive/20 bg-destructive/5" suppressHydrationWarning>
         <div className="flex items-center gap-3 mb-4">
           <AlertCircle className="w-5 h-5 text-destructive" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-destructive">Analysis Failed</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-destructive">Analysis Restricted</h3>
         </div>
-        <p className="text-[11px] text-muted-foreground mb-4 leading-relaxed">{error}</p>
+        <p className="text-[11px] text-muted-foreground mb-4 leading-relaxed font-medium">{error}</p>
         <Button 
           variant="outline" 
           size="sm" 
@@ -93,11 +94,11 @@ export function AIPredictionCard() {
           </div>
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider">AI Health Advisor</h3>
-            <p className="text-[10px] text-muted-foreground">Manual Insights Only</p>
+            <p className="text-[10px] text-muted-foreground">On-Demand Insights</p>
           </div>
         </div>
-        <p className="text-[11px] text-muted-foreground mb-4 leading-relaxed">
-          Get a personalized respiratory risk assessment based on real-time WAQI pollutants.
+        <p className="text-[11px] text-muted-foreground mb-4 leading-relaxed font-medium">
+          Generate a personalized respiratory risk assessment powered by Gemini 2.5 Flash.
         </p>
         <Button 
           onClick={handleAnalyze}
@@ -129,7 +130,7 @@ export function AIPredictionCard() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4" suppressHydrationWarning>
         <div>
           <div className="flex justify-between items-center mb-1">
             <span className="text-[11px] font-bold text-muted-foreground uppercase">Risk Level</span>
@@ -145,13 +146,13 @@ export function AIPredictionCard() {
           </div>
         </div>
 
-        <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+        <div className="bg-white/5 rounded-xl p-3 border border-white/5" suppressHydrationWarning>
           <p className="text-xs text-muted-foreground leading-relaxed italic">
             "{assessment.assessment}"
           </p>
         </div>
 
-        <div className="flex items-start gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20">
+        <div className="flex items-start gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20" suppressHydrationWarning>
           <ShieldCheck className="w-5 h-5 text-primary shrink-0" />
           <div>
             <p className="text-[11px] font-bold text-primary uppercase mb-1">Actionable Advice</p>
@@ -166,7 +167,7 @@ export function AIPredictionCard() {
           className="w-full text-[9px] text-muted-foreground hover:text-primary transition-colors flex items-center justify-center gap-1 mt-2 uppercase font-bold tracking-widest"
         >
           <RefreshCcw className="w-2.5 h-2.5" />
-          Update AI Insights
+          Refresh Assessment
         </button>
       </div>
     </LiquidGlassCard>

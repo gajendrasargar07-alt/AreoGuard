@@ -28,6 +28,7 @@ export default function MapComponent() {
   
   const center: [number, number] = userLocation ? [userLocation.lat, userLocation.lng] : [19.0760, 72.8777];
 
+  // Generates the Atmospheric Choropleth Mesh
   const atmosphericMesh = useMemo(() => {
     if (!userLocation || sensors.length === 0) return [];
 
@@ -49,6 +50,7 @@ export default function MapComponent() {
         let nearestSensor = sensors[0];
         let minDist = Infinity;
         
+        // Proper spatial interpolation for statistics
         sensors.forEach(s => {
           const d = Math.sqrt(Math.pow(s.lat - midLat, 2) + Math.pow(s.lng - midLng, 2));
           if (d < minDist) {
@@ -92,6 +94,7 @@ export default function MapComponent() {
         />
         <ChangeView center={center} />
 
+        {/* The Proper Choropleth Grid Overlay */}
         {atmosphericMesh.map((cell, idx) => {
           const cat = getAQICategory(cell.aqi);
           return (
@@ -122,7 +125,8 @@ export default function MapComponent() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3">
+                  {/* Detailed Statistics Grid inside Popups */}
+                  <div className="grid grid-cols-2 gap-3" suppressHydrationWarning>
                     <div className="space-y-0.5">
                       <p className="text-[8px] font-bold text-muted-foreground uppercase">PM 2.5</p>
                       <p className="text-xs font-black text-white">{cell.stats.pm25.toFixed(1)} <span className="text-[7px] text-muted-foreground">µg/m³</span></p>
@@ -147,17 +151,18 @@ export default function MapComponent() {
           );
         })}
 
+        {/* Physical Sensor Node Markers */}
         {sensors.map((sensor) => {
           const cat = getAQICategory(sensor.aqi);
           return (
             <Circle
               key={`node-${sensor.id}`}
               center={[sensor.lat, sensor.lng]}
-              radius={80}
+              radius={100}
               pathOptions={{
                 fillColor: 'white',
                 color: cat.hex,
-                weight: 5,
+                weight: 4,
                 fillOpacity: 1,
               }}
               eventHandlers={{
@@ -170,7 +175,7 @@ export default function MapComponent() {
                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">Active Sensor Node</span>
                   </div>
-                  <h4 className="font-black text-base text-white mb-4 uppercase tracking-tight leading-none">{sensor.name}</h4>
+                  <h4 className="font-black text-base text-white mb-4 uppercase tracking-tight leading-none truncate">{sensor.name}</h4>
                   
                   <div className="space-y-4">
                     <div className="flex justify-between items-end border-b border-white/10 pb-2">
@@ -178,7 +183,7 @@ export default function MapComponent() {
                       <span className={`text-4xl font-black ${cat.text}`}>{sensor.aqi}</span>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4 bg-white/5 p-3 rounded-xl border border-white/10">
+                    <div className="grid grid-cols-2 gap-4 bg-white/5 p-3 rounded-xl border border-white/10" suppressHydrationWarning>
                       <div className="space-y-1">
                         <p className="text-[9px] font-bold text-muted-foreground uppercase">PM 2.5</p>
                         <p className="text-sm font-black text-white">{sensor.pm25.toFixed(1)}</p>
@@ -195,6 +200,7 @@ export default function MapComponent() {
           );
         })}
 
+        {/* User Exact Location Pulsing Marker */}
         {userLocation && (
           <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
             <Popup>
@@ -218,7 +224,7 @@ export default function MapComponent() {
             </p>
           </div>
           <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">
-            Proper choropleth mesh active. Regional statistics (PM2.5, NO2) are inferred via local sensor redox signals.
+            Proper atmospheric choropleth mesh active. All statistical data (PM2.5, NO2) interpolated from active redox nodes.
           </p>
         </div>
       </div>
