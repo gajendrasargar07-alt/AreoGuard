@@ -59,7 +59,7 @@ export function AIPredictionCard() {
 
   return (
     <LiquidGlassCard className="mb-4">
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-4" suppressHydrationWarning>
         <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
           <BrainCircuit className="w-5 h-5 text-primary" />
         </div>
@@ -69,8 +69,8 @@ export function AIPredictionCard() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div>
+      <div className="space-y-4" suppressHydrationWarning>
+        <div suppressHydrationWarning>
           <div className="flex justify-between items-center mb-1">
             <span className="text-[11px] font-bold text-muted-foreground uppercase">Risk Level</span>
             <span className={`text-xs font-black uppercase tracking-widest ${riskColors[assessment.riskLevel]}`}>
@@ -85,15 +85,15 @@ export function AIPredictionCard() {
           </div>
         </div>
 
-        <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+        <div className="bg-white/5 rounded-xl p-3 border border-white/5" suppressHydrationWarning>
           <p className="text-xs text-muted-foreground leading-relaxed italic">
             "{assessment.assessment}"
           </p>
         </div>
 
-        <div className="flex items-start gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20">
+        <div className="flex items-start gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20" suppressHydrationWarning>
           <ShieldCheck className="w-5 h-5 text-primary shrink-0" />
-          <div>
+          <div suppressHydrationWarning>
             <p className="text-[11px] font-bold text-primary uppercase mb-1">Actionable Advice</p>
             <p className="text-[11px] text-primary/80 leading-relaxed font-medium">
               {assessment.actionableAdvice}

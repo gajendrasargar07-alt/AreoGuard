@@ -17,18 +17,21 @@ export function DashboardSidebar() {
   const [showScience, setShowScience] = useState(false);
 
   return (
-    <div className="w-[380px] h-screen fixed left-0 top-0 z-[1000] p-6 flex flex-col liquid-glass border-r border-white/10 shadow-[20px_0_40px_rgba(0,0,0,0.5)]">
-      <div className="mb-8">
+    <div 
+      className="w-[380px] h-screen fixed left-0 top-0 z-[1000] p-6 flex flex-col liquid-glass border-r border-white/10 shadow-[20px_0_40px_rgba(0,0,0,0.5)]"
+      suppressHydrationWarning
+    >
+      <div className="mb-8" suppressHydrationWarning>
         <AeroLogo />
       </div>
 
-      <ScrollArea className="flex-1 -mx-2 px-2">
-        <div className="space-y-6 pb-6">
+      <ScrollArea className="flex-1 -mx-2 px-2" suppressHydrationWarning>
+        <div className="space-y-6 pb-6" suppressHydrationWarning>
           {/* Geolocation Section */}
           <CurrentLocationCard />
 
           {/* User Profile Toggle */}
-          <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+          <div className="bg-white/5 p-4 rounded-2xl border border-white/10" suppressHydrationWarning>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Settings2 className="w-4 h-4 text-muted-foreground" />
@@ -53,7 +56,7 @@ export function DashboardSidebar() {
           <AIPredictionCard />
 
           {/* Sensor Simulation */}
-          <div className="space-y-4">
+          <div className="space-y-4" suppressHydrationWarning>
             <div className="flex items-center justify-between px-1">
               <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Sensor Simulation</h3>
               <Radio className="w-3 h-3 text-secondary animate-pulse" />
@@ -74,6 +77,7 @@ export function DashboardSidebar() {
           <div 
             className="p-4 rounded-2xl border border-white/5 bg-black/20 cursor-help group transition-all"
             onClick={() => setShowScience(!showScience)}
+            suppressHydrationWarning
           >
             <div className="flex items-center gap-2 mb-2">
               <Info className="w-4 h-4 text-primary" />
@@ -91,7 +95,7 @@ export function DashboardSidebar() {
         </div>
       </ScrollArea>
 
-      <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between text-[10px] font-medium text-muted-foreground">
+      <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between text-[10px] font-medium text-muted-foreground" suppressHydrationWarning>
         <span className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
           Node Network Sync: Active

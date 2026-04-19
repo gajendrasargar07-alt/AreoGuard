@@ -1,4 +1,3 @@
-
 "use client"
 
 import { MapPin, RefreshCw } from "lucide-react";
@@ -6,9 +5,15 @@ import { LiquidGlassCard } from "./LiquidGlassCard";
 import { useAeroStore } from "@/hooks/use-aero-store";
 import { getAQICategory } from "@/lib/aqi-utils";
 import { Button } from "./ui/button";
+import { useEffect, useState } from "react";
 
 export function CurrentLocationCard() {
   const { userLocation, isLocationLoading, setUserLocation, setLocationLoading, currentReading, simulateNewReading } = useAeroStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleRefresh = () => {
     setLocationLoading(true);
@@ -41,10 +46,14 @@ export function CurrentLocationCard() {
   const localAqi = currentReading?.aqi || 0;
   const cat = getAQICategory(localAqi);
 
+  const formattedTime = mounted && currentReading 
+    ? new Date(currentReading.timestamp).toLocaleTimeString() 
+    : 'Syncing...';
+
   return (
     <LiquidGlassCard className="mb-4">
-      <div className="flex justify-between items-start mb-6">
-        <div>
+      <div className="flex justify-between items-start mb-6" suppressHydrationWarning>
+        <div suppressHydrationWarning>
           <h2 className="text-sm font-semibold text-primary uppercase tracking-widest mb-1">Live Tracking</h2>
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-secondary" />
@@ -64,9 +73,9 @@ export function CurrentLocationCard() {
         </Button>
       </div>
 
-      <div className="flex items-end justify-between bg-white/5 p-4 rounded-2xl border border-white/10">
-        <div>
-          <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Local AQI Index</p>
+      <div className="flex items-end justify-between bg-white/5 p-4 rounded-2xl border border-white/10" suppressHydrationWarning>
+        <div suppressHydrationWarning>
+          <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1" suppressHydrationWarning>Local AQI Index</p>
           <div className="flex items-baseline gap-2">
             <span className={`text-5xl font-black tracking-tighter transition-colors duration-500 ${cat.text}`}>
               {localAqi || '--'}
@@ -74,12 +83,12 @@ export function CurrentLocationCard() {
             <span className="text-xs font-medium text-muted-foreground">Level</span>
           </div>
         </div>
-        <div className="text-right">
+        <div className="text-right" suppressHydrationWarning>
           <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase mb-2 transition-colors duration-500 ${cat.color} text-black`}>
             {localAqi ? cat.label : 'Pending'}
           </div>
-          <p className="text-[10px] text-muted-foreground italic">
-            {currentReading ? `Last update: ${new Date(currentReading.timestamp).toLocaleTimeString()}` : 'Syncing...'}
+          <p className="text-[10px] text-muted-foreground italic" suppressHydrationWarning>
+            {currentReading && mounted ? `Last update: ${formattedTime}` : 'Syncing...'}
           </p>
         </div>
       </div>
