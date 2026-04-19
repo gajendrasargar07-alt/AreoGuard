@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -59,7 +60,7 @@
 }
 
 .liquid-glass-dark {
-  @apply bg-black/40 backdrop-blur-3xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)];
+  @apply bg-black/80 backdrop-blur-3xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)];
 }
 
 .neon-glow-primary {
@@ -70,7 +71,7 @@
   box-shadow: 0 0 15px hsla(85, 82%, 65%, 0.3);
 }
 
-/* Custom Scrollbar for Sidebar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -88,8 +89,18 @@
   background: #0B1010 !important;
 }
 
+/* Force Dark Theme for Popups */
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-  @apply liquid-glass-dark text-white rounded-xl border-none !important;
+  background: rgba(10, 15, 15, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  color: white !important;
 }
 
 .glass-marker {
