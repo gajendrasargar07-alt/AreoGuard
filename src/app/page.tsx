@@ -1,10 +1,10 @@
-
 "use client"
 
 import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 import { DashboardSidebar } from '@/components/DashboardSidebar';
-import { useAeroStore } from '@/hooks/use-aero-store';
+import { useAeroStore, type SensorData } from '@/hooks/use-aero-store';
+import { calculateAQI } from '@/lib/aqi-utils';
 
 // Dynamic import for Leaflet (SSR Safety)
 const MapComponent = dynamic(() => import('@/components/MapComponent'), { 
@@ -20,10 +20,9 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), {
 });
 
 export default function Home() {
-  const { setUserLocation, setLocationLoading, simulateNewReading, setSensors } = useAeroStore();
+  const { setUserLocation, setLocationLoading, setSensors, setCurrentReading } = useAeroStore();
 
   useEffect(() => {
-    // 1. Initial Geolocation fetch
     setLocationLoading(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -34,23 +33,45 @@ export default function Home() {
             lng: longitude, 
             city: "User's Device Location" 
           });
-          setLocationLoading(false);
-          
-          // 2. Initialize with some mock sensors nearby
-          const initialSensors = Array.from({ length: 5 }).map((_, i) => ({
-            id: `init-${i}`,
-            name: `AeroNode ${i + 101}`,
-            lat: latitude + (Math.random() - 0.5) * 0.05,
-            lng: longitude + (Math.random() - 0.5) * 0.05,
-            aqi: Math.floor(Math.random() * 150) + 30,
-            pm25: 12.5 + Math.random() * 20,
-            no2: 15.2 + Math.random() * 10,
-            o3: 40 + Math.random() * 30,
-            co: 0.5 + Math.random() * 2,
-            so2: 2 + Math.random() * 5,
+
+          // Create initial "Proper" reading
+          const pm25 = 12 + Math.random() * 10;
+          const no2 = 20 + Math.random() * 15;
+          const o3 = 30 + Math.random() * 20;
+          const co = 0.5 + Math.random() * 0.5;
+          const so2 = 2 + Math.random() * 3;
+          const initialAqi = calculateAQI(pm25, no2, o3, co, so2);
+
+          const initialReading: SensorData = {
+            id: 'initial-reading',
+            name: 'Primary Node',
+            lat: latitude,
+            lng: longitude,
+            aqi: initialAqi,
+            pm25, no2, o3, co, so2,
             timestamp: new Date().toISOString(),
-          }));
+          };
+          setCurrentReading(initialReading);
+
+          // Initialize nearby sensors
+          const initialSensors = Array.from({ length: 5 }).map((_, i) => {
+            const spm25 = 10 + Math.random() * 40;
+            const sno2 = 15 + Math.random() * 30;
+            const so3 = 25 + Math.random() * 50;
+            const sco = 0.3 + Math.random() * 2;
+            const sso2 = 2 + Math.random() * 10;
+            return {
+              id: `init-${i}`,
+              name: `AeroNode ${i + 101}`,
+              lat: latitude + (Math.random() - 0.5) * 0.05,
+              lng: longitude + (Math.random() - 0.5) * 0.05,
+              pm25: spm25, no2: sno2, o3: so3, co: sco, so2: sso2,
+              aqi: calculateAQI(spm25, sno2, so3, sco, sso2),
+              timestamp: new Date().toISOString(),
+            };
+          });
           setSensors(initialSensors);
+          setLocationLoading(false);
         },
         () => {
           // Fallback to Panvel for demo
@@ -59,16 +80,16 @@ export default function Home() {
         }
       );
     }
-  }, [setUserLocation, setLocationLoading, setSensors]);
+  }, [setUserLocation, setLocationLoading, setSensors, setCurrentReading]);
 
   return (
     <main className="relative w-screen h-screen overflow-hidden" suppressHydrationWarning>
-      {/* Main Map Content - Now absolute to fill entire screen */}
+      {/* Main Map Content */}
       <div className="absolute inset-0 z-0">
         <MapComponent />
       </div>
 
-      {/* Liquid Glass Sidebar - Overlays the map */}
+      {/* Liquid Glass Sidebar */}
       <DashboardSidebar />
 
       {/* High-res Detail overlays */}
@@ -81,7 +102,7 @@ export default function Home() {
           <div className="w-px h-6 bg-white/10"></div>
           <div className="flex flex-col">
             <span className="text-[10px] font-bold text-muted-foreground uppercase">Status</span>
-            <span className="text-xs font-bold text-secondary">DECENTRALIZED</span>
+            <span className={`text-xs font-bold text-secondary`}>LIVE DATA</span>
           </div>
         </div>
       </div>

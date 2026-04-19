@@ -1,32 +1,32 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { BrainCircuit, AlertCircle, ShieldCheck } from "lucide-react";
+import { BrainCircuit, ShieldCheck } from "lucide-react";
 import { LiquidGlassCard } from "./LiquidGlassCard";
 import { useAeroStore } from "@/hooks/use-aero-store";
 import { assessPersonalizedRisk, PersonalizedRiskAssessmentOutput } from "@/ai/flows/personalized-risk-assessment";
 
 export function AIPredictionCard() {
-  const { userLocation, userType, sensors } = useAeroStore();
+  const { userLocation, userType, currentReading } = useAeroStore();
   const [assessment, setAssessment] = useState<PersonalizedRiskAssessmentOutput | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function getAIPrediction() {
-      if (!userLocation) return;
+      if (!userLocation || !currentReading) return;
       
       setLoading(true);
       try {
         const result = await assessPersonalizedRisk({
           userType,
           city: userLocation.city,
-          aqi: sensors[0]?.aqi || 42,
-          predictedAqiTrend: "stable with slight improvement overnight",
-          pm25: sensors[0]?.pm25,
-          no2: sensors[0]?.no2,
-          o3: sensors[0]?.o3,
-          co: sensors[0]?.co,
-          so2: sensors[0]?.so2,
+          aqi: currentReading.aqi,
+          predictedAqiTrend: currentReading.aqi > 100 ? "expected to rise slightly" : "stable with slight improvement",
+          pm25: currentReading.pm25,
+          no2: currentReading.no2,
+          o3: currentReading.o3,
+          co: currentReading.co,
+          so2: currentReading.so2,
         });
         setAssessment(result);
       } catch (error) {
@@ -36,14 +36,16 @@ export function AIPredictionCard() {
       }
     }
 
-    const timer = setTimeout(getAIPrediction, 1000);
+    // Debounce AI call to avoid spamming on every simulation click
+    const timer = setTimeout(getAIPrediction, 1500);
     return () => clearTimeout(timer);
-  }, [userLocation, userType, sensors]);
+  }, [userLocation, userType, currentReading]);
 
   if (loading || !assessment) {
     return (
       <LiquidGlassCard className="mb-4 animate-pulse">
-        <div className="h-24 bg-white/5 rounded-xl"></div>
+        <div className="h-4 w-1/3 bg-white/10 rounded mb-4"></div>
+        <div className="h-20 bg-white/5 rounded-xl"></div>
       </LiquidGlassCard>
     );
   }

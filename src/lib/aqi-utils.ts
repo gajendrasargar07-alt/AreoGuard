@@ -1,3 +1,15 @@
+export const calculateAQI = (pm25: number, no2: number, o3: number, co: number, so2: number) => {
+  // US-EPA Simplified Sub-Index Calculation for Prototype
+  // Real calculation uses piecewise linear functions; this is a high-fidelity linear approximation for viva demos
+  const iPm25 = (pm25 / 12) * 50;   // 12 ug/m3 is the Good threshold
+  const iNo2 = (no2 / 53) * 50;    // 53 ppb is the Good threshold
+  const iO3 = (o3 / 54) * 50;      // 54 ppb is the Good threshold
+  const iCo = (co / 4.4) * 50;     // 4.4 ppm is the Good threshold
+  const iSo2 = (so2 / 35) * 50;    // 35 ppb is the Good threshold
+  
+  return Math.round(Math.max(iPm25, iNo2, iO3, iCo, iSo2, 10)); // Floor at 10 for realism
+};
+
 export const getAQICategory = (aqi: number) => {
   if (aqi <= 50) return { label: 'Good', color: 'bg-emerald-500', text: 'text-emerald-400', ring: 'ring-emerald-500/50' };
   if (aqi <= 100) return { label: 'Moderate', color: 'bg-yellow-500', text: 'text-yellow-400', ring: 'ring-yellow-500/50' };

@@ -1,33 +1,34 @@
 "use client"
 
-import { MapPin, Navigation, RefreshCw } from "lucide-react";
+import { MapPin, RefreshCw } from "lucide-react";
 import { LiquidGlassCard } from "./LiquidGlassCard";
 import { useAeroStore } from "@/hooks/use-aero-store";
 import { getAQICategory } from "@/lib/aqi-utils";
-import { Skeleton } from "./ui/skeleton";
 import { Button } from "./ui/button";
 
 export function CurrentLocationCard() {
-  const { userLocation, isLocationLoading, setUserLocation, setLocationLoading } = useAeroStore();
+  const { userLocation, isLocationLoading, setUserLocation, setLocationLoading, currentReading, simulateNewReading } = useAeroStore();
 
   const handleRefresh = () => {
     setLocationLoading(true);
+    // Refresh both location and simulate fresh local data
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          // In a real app, we'd reverse geocode here
+        (pos) => {
           const { latitude, longitude } = pos.coords;
           setUserLocation({ lat: latitude, lng: longitude, city: "Current Coordinates" });
+          simulateNewReading();
           setLocationLoading(false);
         },
         () => {
+          simulateNewReading();
           setLocationLoading(false);
         }
       );
     }
   };
 
-  const localAqi = 42; // Simulated local AQI
+  const localAqi = currentReading?.aqi || 0;
   const cat = getAQICategory(localAqi);
 
   return (
@@ -57,15 +58,19 @@ export function CurrentLocationCard() {
         <div>
           <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Local AQI Index</p>
           <div className="flex items-baseline gap-2">
-            <span className={`text-5xl font-black tracking-tighter ${cat.text}`}>{localAqi}</span>
+            <span className={`text-5xl font-black tracking-tighter transition-colors duration-500 ${cat.text}`}>
+              {localAqi || '--'}
+            </span>
             <span className="text-xs font-medium text-muted-foreground">Level</span>
           </div>
         </div>
         <div className="text-right">
-          <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase mb-2 ${cat.color} text-black`}>
-            {cat.label}
+          <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase mb-2 transition-colors duration-500 ${cat.color} text-black`}>
+            {localAqi ? cat.label : 'Pending'}
           </div>
-          <p className="text-[10px] text-muted-foreground italic">Updated just now</p>
+          <p className="text-[10px] text-muted-foreground italic">
+            {currentReading ? `Last update: ${new Date(currentReading.timestamp).toLocaleTimeString()}` : 'Syncing...'}
+          </p>
         </div>
       </div>
     </LiquidGlassCard>
