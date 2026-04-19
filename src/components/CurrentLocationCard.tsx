@@ -1,4 +1,3 @@
-
 "use client"
 
 import { MapPin, RefreshCw } from "lucide-react";
@@ -54,6 +53,8 @@ export function CurrentLocationCard() {
       return 'Live Now';
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <LiquidGlassCard className="mb-4" suppressHydrationWarning>

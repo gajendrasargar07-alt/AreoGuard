@@ -1,8 +1,7 @@
-
 "use client"
 
 import dynamic from 'next/dynamic';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { DashboardSidebar } from '@/components/DashboardSidebar';
 import { useAeroStore } from '@/hooks/use-aero-store';
 
@@ -20,8 +19,10 @@ const MapComponent = dynamic(() => import('@/components/MapComponent'), {
 
 export default function Home() {
   const { setUserLocation, setLocationLoading, fetchRealData } = useAeroStore();
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     setLocationLoading(true);
     if (typeof window !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -43,12 +44,10 @@ export default function Home() {
             city: cityName 
           });
 
-          // Fetch REAL data from WAQI API
           await fetchRealData(latitude, longitude);
           setLocationLoading(false);
         },
         async () => {
-          // Fallback to Mumbai if geolocation fails
           const fallbackLat = 19.0760;
           const fallbackLng = 72.8777;
           setUserLocation({ lat: fallbackLat, lng: fallbackLng, city: "Mumbai" });
@@ -59,9 +58,11 @@ export default function Home() {
     }
   }, [setUserLocation, setLocationLoading, fetchRealData]);
 
+  if (!isMounted) return null;
+
   return (
     <main className="relative w-screen h-screen overflow-hidden" suppressHydrationWarning>
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0" suppressHydrationWarning>
         <MapComponent />
       </div>
 
@@ -69,12 +70,12 @@ export default function Home() {
 
       <div className="fixed top-6 right-6 z-[2000] flex gap-4 pointer-events-none" suppressHydrationWarning>
         <div className="liquid-glass-dark px-6 py-3 rounded-2xl border border-white/10 flex items-center gap-4 shadow-2xl backdrop-blur-3xl" suppressHydrationWarning>
-          <div className="flex flex-col">
+          <div className="flex flex-col" suppressHydrationWarning>
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Protocol</span>
             <span className="text-xs font-black text-primary">AEROGUARD v4.5</span>
           </div>
           <div className="w-px h-6 bg-white/10"></div>
-          <div className="flex flex-col">
+          <div className="flex flex-col" suppressHydrationWarning>
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Grid Source</span>
             <span className={`text-xs font-black text-secondary uppercase animate-pulse`}>WAQI Real-Time</span>
           </div>
