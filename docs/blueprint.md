@@ -1,0 +1,19 @@
+# **App Name**: AeroGuard
+
+## Core Features:
+
+- Location-Based Data & Map Centering: Automatically detect the user's geolocation via the browser's Geolocation API, center the interactive map on their exact position, and dynamically display hyper-local AQI data. Includes a manual location fallback for user input.
+- Interactive AQI Map Visualization: Provide a full-screen interactive map (react-leaflet) that visualizes real-time AQI data using color-coded, liquid-glass styled circle markers, which pulsate and glow to reflect pollution levels and risks.
+- Real-time Glassmorphism Dashboard: Display real-time AQI values, a live electrochemical sensor feed, personalized respiratory alerts, and AI predictions within a fixed sidebar constructed from premium liquid-glass cards, updated fluidly via Socket.io.
+- AI-Powered Personalized Risk Assessment: Utilize a simple linear trend analysis tool in the backend to provide location-aware personalized respiratory risk alerts and AI predictions, tailoring the output based on the user's defined health profile (normal or patient).
+- User Health Profile Management: Implement user authentication with NextAuth.js, allowing users to log in as either 'normal' or 'patient' types. This profile information dictates the specific, stricter health thresholds applied to personalized risk assessments and alerts.
+- Electrochemical Sensor Simulation: Integrate a UI control that allows for the simulation of new electrochemical sensor readings near the user's location, with on-screen explanations detailing the redox chemistry connection (redox → current → AQI flow).
+- Centralized Data Storage: Store and manage application data, including simulated SensorData, AQIHistory for predictions, and UserProfiles, using MongoDB Atlas to ensure persistence for real-time updates and historical analysis.
+
+## Style Guidelines:
+
+- The base theme features a dark background (#111717) with a subtle greenish-blue tint. A vibrant emerald-neon primary color (#2BEFED) is used for key interactive elements, data highlights, and the app's branding, offering excellent contrast. A bright neon green accent color (#A6ED5E) is reserved for calls to action and to provide dynamic visual emphasis, enhancing the high-tech, futuristic aesthetic.
+- The entire application uses 'Inter' (sans-serif) for all text elements, chosen for its crisp, high-resolution rendering and objective, modern aesthetic, which perfectly complements the ultra-sharp liquid glassmorphism design and ensures readability on a dark background.
+- Utilize modern, precise, and sharp line-art icons that align with the high-tech and scientific nature of environmental monitoring. Icons will ideally feature subtle frosted-glass effects or vibrant neon glows to integrate seamlessly with the liquid glass UI.
+- The interface features a fixed, 380px wide, high-resolution liquid-glass sidebar on the left, which floats gracefully and contains heavily blurred, translucent cards for dashboard elements. The remaining screen real estate is dedicated to a full-screen interactive map. The design is responsive, ensuring the sidebar intelligently collapses or adapts on smaller mobile screens while maintaining its premium aesthetic.
+- Fluid CSS transitions will provide smooth UI interactions. Animated liquid bubbles and subtle refraction lines will appear on hover effects for cards and buttons. Socket.io updates will be signified by elegant, glass-themed toast notifications. Map markers will feature a dynamic pulsing effect with a liquid glow, drawing attention to live data or critical alerts. A sleek, animated loading indicator will display during geolocation fetching to provide visual feedback.
